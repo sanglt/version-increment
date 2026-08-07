@@ -282,6 +282,34 @@ function init_repo {
     [[ "$output" = *"VERSION=$(date +%Y.%-m.1)+pre.${short_ref}"* ]]
 }
 
+@test "uses the API commit message for conventional commits without a checkout" {
+    local no_checkout_dir="${BATS_TEST_TMPDIR}/no-checkout"
+    local mock_bin="${BATS_TEST_TMPDIR}/bin"
+
+    mkdir -p "${no_checkout_dir}" "${mock_bin}"
+    printf '%s\n' \
+        '#!/usr/bin/env bash' \
+        'printf "%s\n" "{\"commit\":{\"message\":\"feat: API-only change\"}}"' \
+        > "${mock_bin}/curl"
+    chmod +x "${mock_bin}/curl"
+
+    export PATH="${mock_bin}:${PATH}"
+    export current_version=1.2.3
+    export scheme="conventional_commits"
+    export use_api="true"
+    export github_token="test-token"
+    export GITHUB_REF="refs/heads/main"
+    export GITHUB_SHA="abcdef1234567890"
+    export GITHUB_API_URL="https://fake.github.example.com"
+    export GITHUB_REPOSITORY="gh-org/example"
+
+    run bash -c 'cd "$1" && version-increment.sh' -- "${no_checkout_dir}"
+
+    print_run_info
+    [ "$status" -eq 0 ] &&
+    [[ "$output" = *"VERSION=1.3.0"* ]]
+}
+
 @test "increments the patch version after a fix commit (conventional commits)" {
     init_repo
 
