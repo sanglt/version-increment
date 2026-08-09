@@ -132,6 +132,8 @@ jobs:
           [[ "${{ steps.version-prefix.outputs.prefixed-version }}" = "foo/bar@0.0.1"* ]]
 
   release:
+    permissions:
+      contents: write
     needs:
       - test-action-yml
     runs-on: ubuntu-latest
