@@ -1,5 +1,11 @@
 # Version Increment ➕
 
+This action calculates the next version based on existing Git tags.
+
+Intentionally, this action does not create tags.  It's suggested to use an
+action dedicated to creating tags in a step following the successful steps
+that make up your test, build and releasing process.  See the example below.
+
 ## Use 📄
 
 > [!NOTE]
@@ -9,22 +15,42 @@
 ### Example ⌨️
 
 ```yaml
+name: Build and release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Get next version
-        uses: reecetech/version-increment@2024.10.1
+        uses: reecetech/version-increment@2026.8.4
         id: version
         with:
           scheme: semver
           increment: patch
 
+      # Example building, using the `version` output from `version-increment`
       - name: Build image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v7
         with:
-          push: false
           tags: "example/application:${{ steps.version.outputs.version }}"
-          context: .
+
+      - name: Create tag & GitHub release
+        uses: softprops/action-gh-release@v3
+        with:
+          draft: false
+          generate_release_notes: true
+          prerelease: false
+          tag_name: ${{ steps.version.outputs.version }}
 ```
 
 #### API mode 🔗
@@ -34,7 +60,7 @@ use the API mode:
 
 ```yaml
       - name: Get next version
-        uses: reecetech/version-increment@2024.10.1
+        uses: reecetech/version-increment@2026.8.4
         id: version
         with:
           use_api: true
@@ -106,7 +132,7 @@ release branch name as an input.  For example:
 
 ```yaml
       - name: Get next version
-        uses: reecetech/version-increment@2023.10.1
+        uses: reecetech/version-increment@2026.8.4
         id: version
         with:
           release_branch: publish
