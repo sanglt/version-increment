@@ -67,6 +67,18 @@ jobs:
         shell: bash
         run: '[[ "$(date +%Y.%-m)" == "$(echo "${{ steps.version-increment.outputs.VERSION }}" | cut -d "." -f 1-2)" ]]'
 
+      - name: Test conventional commit increment version (with API)
+        id: version-increment-conventional
+        run: ./version-increment.sh
+        env:
+          current_version: 1.2.3
+          scheme: conventional_commits
+          use_api: 'true'
+
+      - name: Check conventional commit increment result
+        shell: bash
+        run: '[[ -n "${{ steps.version-increment-conventional.outputs.VERSION }}" ]]'
+
   test-action-yml:  # integration testing
     needs:
       - lint
