@@ -20,19 +20,13 @@ pcre_old_calver='^(?P<major>0|[1-9]\d*)-0{0,1}(?P<minor>0|[0-9]\d*)-R(?P<patch>0
 remove_prefix() {
     local tag="$1"
     if [[ -n "${tag_prefix:-}" ]]; then
-        # Escape special characters in tag_prefix
-        local escaped_prefix
-        escaped_prefix=$(printf '%s\n' "$tag_prefix" | sed 's/[][\/.^$*]/\\&/g')  # special chars matched by sed: ] [ / . ^ $ *
-
-	# shellcheck disable=SC2143
-        if [[ -z "$(echo "${tag}" | grep "^${tag_prefix}")" ]] ; then
-            echo ""
-            return
+        if [[ "${tag}" == "${tag_prefix}"* ]]; then
+            printf '%s\n' "${tag:${#tag_prefix}}"
+        else
+            printf '\n'
         fi
-	# shellcheck disable=SC2001
-        echo "${tag}" | sed "s|^${escaped_prefix}||"  # Use | as the delimiter to avoid conflicts with /
     else
-        echo "${tag}"
+        printf '%s\n' "${tag}"
     fi
 }
 
