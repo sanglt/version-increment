@@ -103,6 +103,35 @@ function init_repo {
     [[ "$output" = *"CURRENT_V_VERSION=v0.1.2"* ]]
 }
 
+@test "treats tag_prefix as a literal string" {
+    init_repo
+
+    export tag_prefix="v."
+
+    git tag v.1.2.3
+    git tag v1.9.9
+
+    run version-lookup.sh
+
+    print_run_info
+    [ "$status" -eq 0 ] &&
+    [[ "$output" = *"CURRENT_VERSION=1.2.3"* ]]
+}
+
+@test "supports a tag_prefix containing a sed delimiter" {
+    init_repo
+
+    export tag_prefix="foo|bar@"
+
+    git tag "foo|bar@1.2.3"
+
+    run version-lookup.sh
+
+    print_run_info
+    [ "$status" -eq 0 ] &&
+    [[ "$output" = *"CURRENT_VERSION=1.2.3"* ]]
+}
+
 @test "finds the current normal version even if there's a newer pre-release version" {
     init_repo
 
