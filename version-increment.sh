@@ -63,7 +63,18 @@ fi
 ##  Conventional commits
 if [[ "${scheme}" == 'conventional_commits' ]] ; then
     # Get message from given commit
-    commit_message=$(git log -1 --pretty=format:%B "${git_commit_sha}")
+    if [[ "${use_api:-}" == 'true' ]] ; then
+        commit_message="$(
+            curl -fsSL \
+                -H "Accept: application/vnd.github+json" \
+                -H "Authorization: Bearer ${github_token}" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/commits/${git_commit_sha}" \
+            | jq -r '.commit.message'
+        )"
+    else
+        commit_message="$(git log -1 --pretty=format:%B "${git_commit_sha}")"
+    fi
 
     # Check commit message header
     found_match='false'
