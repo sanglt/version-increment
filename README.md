@@ -10,17 +10,17 @@
 
 ```yaml
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
 
       - name: Get next version
-        uses: reecetech/version-increment@2024.10.1
+        uses: reecetech/version-increment@2026.8.3
         id: version
         with:
           scheme: semver
           increment: patch
 
       - name: Build image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v7.3.0
         with:
           push: false
           tags: "example/application:${{ steps.version.outputs.version }}"
@@ -34,7 +34,7 @@ use the API mode:
 
 ```yaml
       - name: Get next version
-        uses: reecetech/version-increment@2024.10.1
+        uses: reecetech/version-increment@2026.8.4
         id: version
         with:
           use_api: true
@@ -106,7 +106,7 @@ release branch name as an input.  For example:
 
 ```yaml
       - name: Get next version
-        uses: reecetech/version-increment@2023.10.1
+        uses: reecetech/version-increment@2026.8.4
         id: version
         with:
           release_branch: publish
