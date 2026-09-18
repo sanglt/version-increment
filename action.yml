@@ -22,6 +22,10 @@ inputs:
     description: 'PEP440 compatibility mode - shifts the pre-release version information into build metadata instead'
     required: false
     default: false
+  zero_pad:
+    description: 'Zero-pad CalVer month and release values, producing YYYY.MM.RR versions. This is not SemVer compliant.'
+    required: false
+    default: false
   increment:
     description: |
       Field to increment - major, minor, or, patch (defaults to patch)
@@ -107,6 +111,7 @@ runs:
         increment: ${{ inputs.increment }}
         github_token: ${{ github.token }}
         pep440: ${{ inputs.pep440 }}
+        zero_pad: ${{ inputs.zero_pad }}
         scheme: ${{ inputs.scheme }}
         release_branch: ${{ inputs.release_branch }}
         use_api: ${{ inputs.use_api }}

@@ -218,6 +218,64 @@ function init_repo {
     [[ "$output" = *"VERSION=$(date +%Y.%-m.124)"* ]]
 }
 
+@test "increments zero-padded calver versions" {
+    init_repo
+
+    export current_version="$(date +%Y.%m.09)"
+    export scheme="calver"
+    export zero_pad="true"
+
+    run version-increment.sh
+
+    print_run_info
+    [ "$status" -eq 0 ] &&
+    [[ "$output" = *"MINOR_VERSION=$(date +%m)"* ]] &&
+    [[ "$output" = *"PATCH_VERSION=10"* ]] &&
+    [[ "$output" = *"VERSION=$(date +%Y.%m.10)"* ]]
+}
+
+@test "retains zero-padded calver releases after two digits" {
+    init_repo
+
+    export current_version="$(date +%Y.%m.99)"
+    export scheme="calver"
+    export zero_pad="true"
+
+    run version-increment.sh
+
+    print_run_info
+    [ "$status" -eq 0 ] &&
+    [[ "$output" = *"PATCH_VERSION=100"* ]] &&
+    [[ "$output" = *"VERSION=$(date +%Y.%m.100)"* ]]
+}
+
+@test "starts zero-padded calver versions at the first release of the month" {
+    init_repo
+
+    export current_version="2020.01.01"
+    export scheme="calver"
+    export zero_pad="true"
+
+    run version-increment.sh
+
+    print_run_info
+    [ "$status" -eq 0 ] &&
+    [[ "$output" = *"VERSION=$(date +%Y.%m.01)"* ]]
+}
+
+@test "fails when zero_pad is used outside calver" {
+    init_repo
+
+    export current_version=1.2.3
+    export zero_pad="true"
+
+    run version-increment.sh
+
+    print_run_info
+    [ "$status" -eq 8 ] &&
+    [[ "$output" = *"Value of 'zero_pad' is only supported when 'scheme' is 'calver'"* ]]
+}
+
 @test "appends prerelease information if on a branch" {
     init_repo
 

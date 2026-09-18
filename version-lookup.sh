@@ -24,6 +24,11 @@ fi
 ##  Version parsing
 
 # detect current version - removing "v" from start of tag if it exists
+version_regex="${pcre_allow_vprefix}"
+if [[ "${zero_pad}" == 'true' ]] ; then
+    version_regex="${pcre_allow_vprefix_zero_padded_calver}"
+fi
+
 if [[ "${use_api:-}" == 'true' ]] ; then
     current_version="$(
         curl -fsSL \
@@ -33,7 +38,7 @@ if [[ "${use_api:-}" == 'true' ]] ; then
             "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/git/matching-refs/tags/" \
         | jq -r '.[].ref' | sed 's|refs/tags/||g' \
         | while read -r tag; do remove_prefix "$tag"; done \
-        | { grep_p "${pcre_allow_vprefix}" || true; } \
+        | { grep_p "${version_regex}" || true; } \
         | sed 's/^v//g' \
         | sort -V | tail -n 1
     )"
@@ -41,7 +46,7 @@ else
     current_version="$(
         git tag -l \
         | while read -r tag; do remove_prefix "$tag"; done \
-        | { grep_p "${pcre_allow_vprefix}" || true; } \
+        | { grep_p "${version_regex}" || true; } \
         | sed 's/^v//g' \
         | sort -V | tail -n 1
     )"
@@ -56,7 +61,11 @@ if [[ -z "${current_version:-}" ]] ; then
             current_version="0.0.0"
         ;;
         calver)
-            current_version="$(date '+%Y.%-m.0')"
+            if [[ "${zero_pad}" == 'true' ]] ; then
+                current_version="$(date '+%Y.%m.00')"
+            else
+                current_version="$(date '+%Y.%-m.0')"
+            fi
         ;;
     esac
 fi

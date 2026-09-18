@@ -211,6 +211,36 @@ function init_repo {
     [[ "$output" = *"CURRENT_VERSION=$(date '+%Y.%-m.0')"* ]]
 }
 
+@test "finds the current zero-padded calver version" {
+    init_repo
+
+    export scheme="calver"
+    export zero_pad="true"
+
+    git tag 2026.09.01
+    git tag 2026.09.02
+
+    run version-lookup.sh
+
+    print_run_info
+    [ "$status" -eq 0 ] &&
+    [[ "$output" = *"CURRENT_VERSION=2026.09.02"* ]] &&
+    [[ "$output" = *"CURRENT_V_VERSION=v2026.09.02"* ]]
+}
+
+@test "starts zero-padded calver at release zero" {
+    init_repo
+
+    export scheme="calver"
+    export zero_pad="true"
+
+    run version-lookup.sh
+
+    print_run_info
+    [ "$status" -eq 0 ] &&
+    [[ "$output" = *"CURRENT_VERSION=$(date '+%Y.%m.00')"* ]]
+}
+
 @test "strips v from the version" {
     init_repo
 

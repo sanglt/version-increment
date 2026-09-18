@@ -12,6 +12,9 @@ export LC_ALL=C.UTF-8
 pcre_semver='^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
 pcre_master_ver='^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)$'
 pcre_allow_vprefix="^v{0,1}${pcre_master_ver:1}"
+pcre_zero_padded_calver='^(?P<major>\d{4})\.(?P<minor>\d{2})\.(?P<patch>\d{2,})$'
+pcre_zero_padded_calver_version='^(?P<major>\d{4})\.(?P<minor>\d{2})\.(?P<patch>\d{2,})(?:[-+][0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*)?$'
+pcre_allow_vprefix_zero_padded_calver="^v{0,1}${pcre_zero_padded_calver:1}"
 pcre_old_calver='^(?P<major>0|[1-9]\d*)-0{0,1}(?P<minor>0|[0-9]\d*)-R(?P<patch>0|[1-9]\d*)$'
 
 ##==----------------------------------------------------------------------------
@@ -51,6 +54,15 @@ fi
 pep440="${pep440:-false}"
 if [[ "${pep440}" != 'false' && "${pep440}" != 'true' ]] ; then
     echo "🛑 Value of 'pep440' is not valid, choose from 'false' or 'true'" 1>&2
+    input_errors='true'
+fi
+
+zero_pad="${zero_pad:-false}"
+if [[ "${zero_pad}" != 'false' && "${zero_pad}" != 'true' ]] ; then
+    echo "🛑 Value of 'zero_pad' is not valid, choose from 'false' or 'true'" 1>&2
+    input_errors='true'
+elif [[ "${zero_pad}" == 'true' && "${scheme}" != 'calver' ]] ; then
+    echo "🛑 Value of 'zero_pad' is only supported when 'scheme' is 'calver'" 1>&2
     input_errors='true'
 fi
 

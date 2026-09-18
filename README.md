@@ -88,6 +88,10 @@ month and release digits.
 
 Note: to be semver compliant, digits must not have leading zeros.
 
+Set `zero_pad: true` to use zero-padded CalVer versions in `YYYY.MM.RR`
+format, such as `2026.09.01`. This option is only available for CalVer, and
+the resulting versions are not SemVer compliant.
+
 e.g. `2021.6.2`
 
 | semver | calver  | example | note |
@@ -155,6 +159,7 @@ Examples:
 | :---           | :---                                                                                        | :---     | :---     |
 | scheme         | The versioning scheme in-use, either `semver`, `calver` or `conventional_commits`           | No       | `semver` |
 | pep440         | Set to `true` for PEP440 compatibility of _pre-release_ versions by making use of the build metadata segment of semver, which maps to local version identifier in PEP440 | No       | `false`  |
+| zero_pad       | Set to `true` to zero-pad CalVer month and release values as `YYYY.MM.RR`; not available for SemVer or conventional commits | No       | `false`  |
 | increment      | The digit to increment, either `major`, `minor` or `patch`, ignored if `scheme` == `calver` | No       | `patch`  |
 | release_branch | Specify a non-default branch to use for the release tag (the one without -pre)              | No       |          |
 | use_api        | Use the GitHub API to discover current tags, which avoids the need for a git checkout, but requires `curl` and `jq` | No       | `false`  |

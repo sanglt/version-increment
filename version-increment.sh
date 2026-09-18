@@ -15,7 +15,10 @@ fi
 if [[ -z "${current_version:-}" ]] ; then
     echo "🛑 Environment variable 'current_version' is unset or empty" 1>&2
     input_errors='true'
-elif [[ -z "$(echo "${current_version}" | grep_p "${pcre_master_ver}")" ]] ; then
+elif [[ "${zero_pad}" == 'true' && -z "$(echo "${current_version}" | grep_p "${pcre_zero_padded_calver}")" ]] ; then
+    echo "🛑 Environment variable 'current_version' is not a valid zero-padded calver version (YYYY.MM.RR)" 1>&2
+    input_errors='true'
+elif [[ "${zero_pad}" == 'false' && -z "$(echo "${current_version}" | grep_p "${pcre_master_ver}")" ]] ; then
     echo "🛑 Environment variable 'current_version' is not a valid normal version (M.m.p)" 1>&2
     input_errors='true'
 fi
@@ -99,24 +102,39 @@ fi
 
 # increment the month if needed
 if [[ "${scheme}" == "calver" ]] ; then
-    month="$(date '+%Y.%-m.')"
+    if [[ "${zero_pad}" == 'true' ]] ; then
+        month="$(date '+%Y.%m.')"
+    else
+        month="$(date '+%Y.%-m.')"
+    fi
     release="${current_version//$month/}"
     if [[ "${release}" == "${current_version}" ]] ; then
-        current_version="$(date '+%Y.%-m.0')"
+        if [[ "${zero_pad}" == 'true' ]] ; then
+            current_version="$(date '+%Y.%m.00')"
+        else
+            current_version="$(date '+%Y.%-m.0')"
+        fi
     fi
 fi
 
 # increment the patch digit
 IFS=" " read -r -a version_array <<< "${current_version//./ }"
 if [[ "${increment}" == 'patch' || "${scheme}" == 'calver' ]] ; then
-    (( ++version_array[2] ))
+    (( version_array[2] = 10#${version_array[2]} + 1 ))
 elif [[ "${increment}" == 'minor' ]] ; then
-    (( ++version_array[1] ))
+    (( version_array[1] = 10#${version_array[1]} + 1 ))
     version_array[2]='0'
 elif [[ "${increment}" == 'major' ]] ; then
-    (( ++version_array[0] ))
+    (( version_array[0] = 10#${version_array[0]} + 1 ))
     version_array[1]='0'
     version_array[2]='0'
+fi
+
+if [[ "${zero_pad}" == 'true' ]] ; then
+    printf -v padded_minor '%02d' "$((10#${version_array[1]}))"
+    printf -v padded_patch '%02d' "$((10#${version_array[2]}))"
+    version_array[1]="${padded_minor}"
+    version_array[2]="${padded_patch}"
 fi
 
 new_version="${version_array[0]}.${version_array[1]}.${version_array[2]}"
@@ -139,9 +157,8 @@ if [[ "${current_ref}" != "refs/heads/${default_branch}" ]] ; then
     echo "PRE_RELEASE_LABEL=${pre_release}" >> "${GITHUB_OUTPUT}"
 fi
 
-if [[ -z "$(echo "${new_version}" | grep_p "${pcre_semver}")" ]] ; then
-    echo "🛑 Version incrementing has failed to produce a semver compliant version" 1>&2
-    echo "ℹ️ See: https://semver.org/spec/v2.0.0.html" 1>&2
+if [[ "${zero_pad}" == 'false' && -z "$(echo "${new_version}" | grep_p "${pcre_semver}")" ]] || [[ "${zero_pad}" == 'true' && -z "$(echo "${new_version}" | grep_p "${pcre_zero_padded_calver_version}")" ]] ; then
+    echo "🛑 Version incrementing has failed to produce a valid version" 1>&2
     echo "ℹ️ Failed version string: '${new_version}'" 1>&2
     exit 12
 fi
