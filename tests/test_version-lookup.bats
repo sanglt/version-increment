@@ -228,6 +228,22 @@ function init_repo {
     [[ "$output" = *"CURRENT_V_VERSION=v2026.09.02"* ]]
 }
 
+@test "migrates the current unpadded calver version to zero-padded output" {
+    init_repo
+
+    export scheme="calver"
+    export zero_pad="true"
+
+    git tag 2026.9.1
+
+    run version-lookup.sh
+
+    print_run_info
+    [ "$status" -eq 0 ] &&
+    [[ "$output" = *"CURRENT_VERSION=2026.09.01"* ]] &&
+    [[ "$output" = *"CURRENT_V_VERSION=v2026.09.01"* ]]
+}
+
 @test "starts zero-padded calver at release zero" {
     init_repo
 

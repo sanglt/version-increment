@@ -92,6 +92,10 @@ Set `zero_pad: true` to use zero-padded CalVer versions in `YYYY.MM.RR`
 format, such as `2026.09.01`. This option is only available for CalVer, and
 the resulting versions are not SemVer compliant.
 
+When enabled, existing unpadded CalVer tags are recognized and the next version
+is emitted in zero-padded form. Padded tags are not recognized after disabling
+`zero_pad`.
+
 e.g. `2021.6.2`
 
 | semver | calver  | example | note |

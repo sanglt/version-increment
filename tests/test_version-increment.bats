@@ -234,6 +234,22 @@ function init_repo {
     [[ "$output" = *"VERSION=$(date +%Y.%m.10)"* ]]
 }
 
+@test "migrates an unpadded calver version to a zero-padded version" {
+    init_repo
+
+    export current_version="$(date +%Y.%-m.1)"
+    export scheme="calver"
+    export zero_pad="true"
+
+    run version-increment.sh
+
+    print_run_info
+    [ "$status" -eq 0 ] &&
+    [[ "$output" = *"MINOR_VERSION=$(date +%m)"* ]] &&
+    [[ "$output" = *"PATCH_VERSION=02"* ]] &&
+    [[ "$output" = *"VERSION=$(date +%Y.%m.02)"* ]]
+}
+
 @test "retains zero-padded calver releases after two digits" {
     init_repo
 

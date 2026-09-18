@@ -15,8 +15,8 @@ fi
 if [[ -z "${current_version:-}" ]] ; then
     echo "🛑 Environment variable 'current_version' is unset or empty" 1>&2
     input_errors='true'
-elif [[ "${zero_pad}" == 'true' && -z "$(echo "${current_version}" | grep_p "${pcre_zero_padded_calver}")" ]] ; then
-    echo "🛑 Environment variable 'current_version' is not a valid zero-padded calver version (YYYY.MM.RR)" 1>&2
+elif [[ "${zero_pad}" == 'true' && -z "$(echo "${current_version}" | grep_p "${pcre_calver}")" && -z "$(echo "${current_version}" | grep_p "${pcre_zero_padded_calver}")" ]] ; then
+    echo "🛑 Environment variable 'current_version' is not a valid calver version (YYYY.M.R or YYYY.MM.RR)" 1>&2
     input_errors='true'
 elif [[ "${zero_pad}" == 'false' && -z "$(echo "${current_version}" | grep_p "${pcre_master_ver}")" ]] ; then
     echo "🛑 Environment variable 'current_version' is not a valid normal version (M.m.p)" 1>&2
@@ -103,6 +103,7 @@ fi
 # increment the month if needed
 if [[ "${scheme}" == "calver" ]] ; then
     if [[ "${zero_pad}" == 'true' ]] ; then
+        current_version="$(zero_pad_calver "${current_version}")"
         month="$(date '+%Y.%m.')"
     else
         month="$(date '+%Y.%-m.')"
@@ -131,13 +132,11 @@ elif [[ "${increment}" == 'major' ]] ; then
 fi
 
 if [[ "${zero_pad}" == 'true' ]] ; then
-    printf -v padded_minor '%02d' "$((10#${version_array[1]}))"
-    printf -v padded_patch '%02d' "$((10#${version_array[2]}))"
-    version_array[1]="${padded_minor}"
-    version_array[2]="${padded_patch}"
+    new_version="$(zero_pad_calver "${version_array[0]}.${version_array[1]}.${version_array[2]}")"
+    IFS=" " read -r -a version_array <<< "${new_version//./ }"
+else
+    new_version="${version_array[0]}.${version_array[1]}.${version_array[2]}"
 fi
-
-new_version="${version_array[0]}.${version_array[1]}.${version_array[2]}"
 
 # check we haven't accidentally forgotten to set scheme to calver
 # TODO: provide an override "I know my version numbers are > 2020, but it's semver!" option

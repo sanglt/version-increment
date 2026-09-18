@@ -26,7 +26,7 @@ fi
 # detect current version - removing "v" from start of tag if it exists
 version_regex="${pcre_allow_vprefix}"
 if [[ "${zero_pad}" == 'true' ]] ; then
-    version_regex="${pcre_allow_vprefix_zero_padded_calver}"
+    version_regex="${pcre_allow_vprefix_calver_or_zero_padded_calver}"
 fi
 
 if [[ "${use_api:-}" == 'true' ]] ; then
@@ -68,6 +68,10 @@ if [[ -z "${current_version:-}" ]] ; then
             fi
         ;;
     esac
+fi
+
+if [[ "${zero_pad}" == 'true' ]] ; then
+    current_version="$(zero_pad_calver "${current_version}")"
 fi
 
 echo "ℹ️ The current normal version is ${current_version}"
